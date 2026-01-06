@@ -1,0 +1,311 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { Menu, LogIn, LogOut, Settings, Moon, Sun } from 'lucide-react';
+import Image from 'next/image';
+import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/use-auth';
+
+const navigation = [
+  { name: 'Inicio', href: '/' },
+  { name: 'Empleados', href: '/empleados' },
+  { name: 'Proyectos', href: '/proyectos' },
+  { name: 'Licencias', href: '/licencias' },
+];
+
+export function Header() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { user, isAuthenticated, isHydrated, logout, fullName, isAdmin } = useAuth();
+  const { setTheme, resolvedTheme } = useTheme();
+
+  // Evitar hydration mismatch con next-themes
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // No mostrar Header en rutas de admin (tiene su propio header)
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
+
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname.startsWith(href.split('?')[0]);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    setIsOpen(false);
+    router.push('/');
+  };
+
+  const getInitials = () => {
+    if (!user) return 'U';
+    if (user.nombre) {
+      return `${user.nombre[0]}${user.apellido?.[0] || ''}`.toUpperCase();
+    }
+    return user.email[0].toUpperCase();
+  };
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+      <div className="container mx-auto px-4">
+        <div className="relative flex h-16 items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2 z-10">
+            <Image src="/logo.png" alt="América Virtual" width={32} height={32} className="object-contain" style={{ width: 'auto', height: 'auto' }} />
+            <span className="font-bold text-xl hidden sm:inline-block">
+              América Virtual RRHH
+            </span>
+            <span className="font-bold text-xl sm:hidden">AV</span>
+          </Link>
+
+          {/* Desktop Navigation - Centered Absolutely */}
+          <nav
+            className="hidden md:flex items-center justify-center space-x-6 absolute left-1/2 -translate-x-1/2"
+            aria-label="Navegacion principal"
+          >
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive(item.href) ? 'text-primary' : 'text-muted-foreground'
+                }`}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Desktop Auth/User */}
+          <div className="hidden md:flex items-center space-x-4">
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}
+              className="relative flex size-9 items-center justify-center rounded-md hover:bg-accent transition-colors cursor-pointer"
+              aria-label={mounted ? (resolvedTheme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro') : 'Cambiar tema'}
+              aria-pressed={mounted ? resolvedTheme === 'dark' : undefined}
+            >
+              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" aria-hidden="true" />
+              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" aria-hidden="true" />
+              <span className="sr-only">Cambiar tema</span>
+            </button>
+
+            {!isHydrated ? (
+              <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+            ) : isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>{getInitials()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      <p className="font-medium">{fullName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {user.email}
+                      </p>
+                      {isAdmin && (
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded w-fit">
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/perfil">Mi Perfil</Link>
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="flex items-center">
+                          <Settings className="mr-2 h-4 w-4" />
+                          Panel de Admin
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-red-600 cursor-pointer"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Cerrar Sesion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" asChild>
+                  <Link href="/login">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Ingresar
+                  </Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/registro">Registrarse</Link>
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Abrir menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-75 sm:w-100">
+              <SheetHeader>
+                <SheetTitle className="flex items-center space-x-2">
+                  <Image src="/logo.png" alt="América Virtual" width={24} height={24} className="object-contain" style={{ width: 'auto', height: 'auto' }} />
+                  <span>América Virtual RRHH</span>
+                </SheetTitle>
+                <SheetDescription className="sr-only">
+                  Menu de navegacion principal
+                </SheetDescription>
+              </SheetHeader>
+
+              {/* Theme Toggle Mobile */}
+              <div className="flex items-center justify-between mt-4 px-2">
+                <span className="text-sm text-muted-foreground">Tema</span>
+                <button
+                  onClick={() => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}
+                  className="relative flex size-9 items-center justify-center rounded-md hover:bg-accent transition-colors cursor-pointer"
+                  aria-label={mounted ? (resolvedTheme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro') : 'Cambiar tema'}
+                  aria-pressed={mounted ? resolvedTheme === 'dark' : undefined}
+                >
+                  <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" aria-hidden="true" />
+                  <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" aria-hidden="true" />
+                  <span className="sr-only">Cambiar tema</span>
+                </button>
+              </div>
+
+              <nav className="flex flex-col space-y-4 mt-8" aria-label="Navegacion movil">
+                {navigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className={`text-lg font-medium transition-colors hover:text-primary p-2 rounded-md ${
+                      isActive(item.href)
+                        ? 'text-primary bg-primary/10'
+                        : 'text-muted-foreground'
+                    }`}
+                    aria-current={isActive(item.href) ? 'page' : undefined}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </nav>
+
+              <div className="absolute bottom-8 left-6 right-6">
+                {isAuthenticated && user ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3 p-2">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback>{getInitials()}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{fullName}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      asChild
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Link href="/perfil">Mi Perfil</Link>
+                    </Button>
+                    {isAdmin && (
+                      <Button
+                        variant="default"
+                        className="w-full"
+                        asChild
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Link href="/admin">
+                          <Settings className="mr-2 h-4 w-4" />
+                          Panel de Admin
+                        </Link>
+                      </Button>
+                    )}
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Cerrar Sesion
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Button
+                      className="w-full"
+                      asChild
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Link href="/login">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Ingresar
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      asChild
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Link href="/registro">Registrarse</Link>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </header>
+  );
+}
