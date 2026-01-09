@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -44,7 +43,6 @@ const mockProyectos = [
     descripcion: 'Rediseño completo del portal de clientes con nuevas funcionalidades',
     cliente: 'Banco Nacional',
     estado: 'activo',
-    progreso: 75,
     fecha_inicio: '2025-06-01',
     fecha_fin_estimada: '2026-03-15',
     equipo: [
@@ -60,7 +58,6 @@ const mockProyectos = [
     descripcion: 'Aplicación móvil para gestión de empleados y solicitudes',
     cliente: 'Interno',
     estado: 'activo',
-    progreso: 45,
     fecha_inicio: '2025-09-01',
     fecha_fin_estimada: '2026-04-30',
     equipo: [
@@ -75,7 +72,6 @@ const mockProyectos = [
     descripcion: 'Sistema de control de inventario para almacenes',
     cliente: 'Logística Express',
     estado: 'activo',
-    progreso: 90,
     fecha_inicio: '2025-03-15',
     fecha_fin_estimada: '2026-01-31',
     equipo: [
@@ -91,7 +87,6 @@ const mockProyectos = [
     descripcion: 'Panel de análisis de datos y reportes ejecutivos',
     cliente: 'TechCorp',
     estado: 'completado',
-    progreso: 100,
     fecha_inicio: '2025-01-10',
     fecha_fin_estimada: '2025-08-30',
     equipo: [
@@ -106,7 +101,6 @@ const mockProyectos = [
     descripcion: 'Plataforma de comercio electrónico B2B',
     cliente: 'Distribuidora Norte',
     estado: 'pausado',
-    progreso: 30,
     fecha_inicio: '2025-07-01',
     fecha_fin_estimada: '2026-06-30',
     equipo: [
@@ -121,7 +115,6 @@ const mockProyectos = [
     descripcion: 'Sistema de gestión de relaciones con clientes',
     cliente: 'Interno',
     estado: 'activo',
-    progreso: 60,
     fecha_inicio: '2025-08-15',
     fecha_fin_estimada: '2026-05-15',
     equipo: [
@@ -259,7 +252,7 @@ export default function ProyectosPage() {
           />
         </div>
         <Select value={filterEstado} onValueChange={setFilterEstado}>
-          <SelectTrigger className="w-full sm:w-45">
+          <SelectTrigger className="w-full sm:w-45" aria-label="Filtrar por estado">
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
@@ -324,15 +317,6 @@ export default function ProyectosPage() {
                       {config?.label || proyecto.estado}
                     </Badge>
                     <span className="text-sm text-muted-foreground">{proyecto.cliente}</span>
-                  </div>
-
-                  {/* Progreso */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Progreso</span>
-                      <span className="font-medium">{proyecto.progreso}%</span>
-                    </div>
-                    <Progress value={proyecto.progreso} className="h-2" />
                   </div>
 
                   {/* Fechas */}

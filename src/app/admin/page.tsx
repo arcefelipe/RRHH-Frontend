@@ -151,7 +151,7 @@ const mockLicenciasProximas: LicenciaProxima[] = [
 
 const mockEmpleadosPorDepartamento = [
   { departamento: 'Desarrollo', cantidad: 45 },
-  { departamento: 'Diseno', cantidad: 18 },
+  { departamento: 'Diseño', cantidad: 18 },
   { departamento: 'Marketing', cantidad: 22 },
   { departamento: 'RRHH', cantidad: 12 },
   { departamento: 'Finanzas', cantidad: 15 },
@@ -643,7 +643,7 @@ export default function AdminDashboardPage() {
 
             {/* Filter */}
             <Select value={filterTipo} onValueChange={(v) => { setFilterTipo(v); setCurrentPage(1); }}>
-              <SelectTrigger className="h-9 w-full sm:w-37.5">
+              <SelectTrigger className="h-9 w-full sm:w-37.5" aria-label="Filtrar por tipo de licencia">
                 <SelectValue placeholder="Tipo" />
               </SelectTrigger>
               <SelectContent>

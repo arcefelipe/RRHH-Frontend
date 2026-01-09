@@ -317,58 +317,62 @@ export default function RolesPage() {
                     onOpenChange={() => toggleExpanded(rol.id)}
                   >
                     <div className="border rounded-lg">
-                      <CollapsibleTrigger asChild>
-                        <button className="w-full px-4 py-4 flex items-center gap-4 hover:bg-muted/50 transition-colors">
-                          <div
-                            className="size-10 rounded-lg flex items-center justify-center text-white shrink-0"
-                            style={{ backgroundColor: rol.color }}
-                          >
-                            <IconNivel className="size-5" />
-                          </div>
-                          <div className="text-left flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-medium">{rol.nombre}</span>
-                              <Badge variant={nivelCfg?.variant || 'outline'}>
-                                {nivelCfg?.label || `Nivel ${rol.nivel}`}
-                              </Badge>
+                      <div className="flex items-center">
+                        <CollapsibleTrigger asChild>
+                          <button className="flex-1 px-4 py-4 flex items-center gap-4 hover:bg-muted/50 transition-colors">
+                            <div
+                              className="size-10 rounded-lg flex items-center justify-center text-white shrink-0"
+                              style={{ backgroundColor: rol.color }}
+                            >
+                              <IconNivel className="size-5" />
                             </div>
-                            <p className="text-sm text-muted-foreground truncate">{rol.descripcion}</p>
-                          </div>
-                          <div className="flex items-center gap-4 shrink-0">
-                            <div className="text-right hidden sm:block">
-                              <p className="text-sm font-medium">{rol.usuarios} usuarios</p>
-                              <p className="text-xs text-muted-foreground">
-                                {countPermisos(rol.permisos)} permisos
-                              </p>
+                            <div className="text-left flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-medium">{rol.nombre}</span>
+                                <Badge variant={nivelCfg?.variant || 'outline'}>
+                                  {nivelCfg?.label || `Nivel ${rol.nivel}`}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground truncate">{rol.descripcion}</p>
                             </div>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                <Button variant="ghost" size="icon">
-                                  <MoreHorizontal className="size-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                  <Pencil className="size-4 mr-2" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-destructive"
-                                  disabled={rol.nivel <= 2}
-                                >
-                                  <Trash2 className="size-4 mr-2" />
-                                  Eliminar
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                            {isExpanded ? (
-                              <ChevronDown className="size-4 text-muted-foreground" />
-                            ) : (
-                              <ChevronRight className="size-4 text-muted-foreground" />
-                            )}
-                          </div>
-                        </button>
-                      </CollapsibleTrigger>
+                            <div className="flex items-center gap-4 shrink-0">
+                              <div className="text-right hidden sm:block">
+                                <p className="text-sm font-medium">{rol.usuarios} usuarios</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {countPermisos(rol.permisos)} permisos
+                                </p>
+                              </div>
+                              {isExpanded ? (
+                                <ChevronDown className="size-4 text-muted-foreground" />
+                              ) : (
+                                <ChevronRight className="size-4 text-muted-foreground" />
+                              )}
+                            </div>
+                          </button>
+                        </CollapsibleTrigger>
+                        <div className="pr-4">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="size-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>
+                                <Pencil className="size-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-destructive"
+                                disabled={rol.nivel <= 2}
+                              >
+                                <Trash2 className="size-4 mr-2" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
                       <CollapsibleContent>
                         <div className="px-4 pb-4 border-t">
                           <h4 className="text-sm font-medium my-4">Matriz de Permisos</h4>
@@ -376,7 +380,7 @@ export default function RolesPage() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead className="w-[150px]">Modulo</TableHead>
+                                  <TableHead className="w-37.5">Modulo</TableHead>
                                   <TableHead className="text-center">Ver</TableHead>
                                   <TableHead className="text-center">Crear</TableHead>
                                   <TableHead className="text-center">Editar</TableHead>

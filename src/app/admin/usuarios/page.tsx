@@ -335,7 +335,7 @@ export default function AdminUsuariosPage() {
               />
             </div>
             <Select value={rolFilter} onValueChange={setRolFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-45" aria-label="Filtrar por rol">
                 <SelectValue placeholder="Filtrar por rol" />
               </SelectTrigger>
               <SelectContent>
@@ -347,7 +347,7 @@ export default function AdminUsuariosPage() {
               </SelectContent>
             </Select>
             <Select value={providerFilter} onValueChange={setProviderFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-45" aria-label="Filtrar por proveedor">
                 <SelectValue placeholder="Proveedor" />
               </SelectTrigger>
               <SelectContent>

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Header, Footer } from "@/components/layout";
 import { GoogleAuthProvider, ThemeProvider } from "@/components/providers";
 import { SkipLink, LiveRegionProvider } from "@/components/accessibility";
 import { Toaster } from "@/components/ui/sonner";
@@ -38,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased min-h-svh`}
+        className={`${inter.variable} ${jetbrainsMono.variable} antialiased h-svh overflow-hidden`}
       >
         <ThemeProvider
           attribute="class"

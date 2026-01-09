@@ -66,7 +66,7 @@
   --popover: #ffffff;
   --popover-foreground: #1a202c;
 
-  /* Primary - Coral/Salmon #ff6859 */
+  /* Primary - Coral */
   --primary: #ff6859;
   --primary-foreground: #ffffff;
 
@@ -101,15 +101,15 @@
   --chart-4: #ed8936;
   --chart-5: #9f7aea;
 
-  /* Sidebar - Coral/Salmon */
+  /* Sidebar - Rosa de fondo, contenido blanco */
   --sidebar: #ff6859;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #ff6859;
-  --sidebar-accent: #ff8577;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #e64d3d;
-  --sidebar-ring: #ffffff;
+  --sidebar-foreground: #1a202c;
+  --sidebar-primary: #ff6859;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #1a202c;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #ff6859;
 }
 
 /* ============================================
@@ -126,7 +126,7 @@
   --popover: #2d3748;
   --popover-foreground: #f7fafc;
 
-  /* Primary - Coral/Salmon */
+  /* Primary - Coral */
   --primary: #ff6859;
   --primary-foreground: #ffffff;
 

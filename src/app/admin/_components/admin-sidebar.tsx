@@ -31,14 +31,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   LayoutDashboard,
-  Gauge,
   FolderKanban,
   Users,
   CalendarDays,
   Tags,
   Briefcase,
-  Layers,
-  Cpu,
   UserCog,
   Newspaper,
   History,
@@ -58,12 +55,6 @@ const navItems = [
     href: '/admin',
     icon: LayoutDashboard,
     permission: 'dashboard.ver',
-  },
-  {
-    title: 'Panel de Control',
-    href: '/admin/panel-control',
-    icon: Gauge,
-    permission: 'panel.ver',
   },
   {
     title: 'Proyectos',
@@ -100,20 +91,6 @@ const categorias = [
     permission: 'categorias.ver',
   },
   {
-    id: 'recursos-proyecto',
-    title: 'Recursos Por Proyecto',
-    href: '/admin/categorias/recursos-proyecto',
-    icon: Layers,
-    permission: 'categorias.ver',
-  },
-  {
-    id: 'tecnologias',
-    title: 'Tecnologías',
-    href: '/admin/categorias/tecnologias',
-    icon: Cpu,
-    permission: 'categorias.ver',
-  },
-  {
     id: 'roles',
     title: 'Rol',
     href: '/admin/categorias/roles',
@@ -142,9 +119,15 @@ export function AdminSidebar({
 }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
-  const [categoriasExpanded, setCategoriasExpanded] = React.useState(
-    pathname.startsWith('/admin/categorias')
-  );
+  const [categoriasExpanded, setCategoriasExpanded] = React.useState(false);
+
+  // Set initial expanded state after hydration to avoid mismatch
+  const initialPathRef = React.useRef(pathname);
+  React.useEffect(() => {
+    if (initialPathRef.current.startsWith('/admin/categorias')) {
+      setCategoriasExpanded(true);
+    }
+  }, []);
 
   // Por ahora todos los items están accesibles
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -158,17 +141,17 @@ export function AdminSidebar({
   };
 
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="px-2.5 py-3">
+    <Sidebar collapsible="icon" className="border-r-0! border-none" {...props}>
+      <SidebarHeader className="bg-[#ff6859] dark:bg-transparent px-4 pt-4 pb-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3 group-data-[collapsible=icon]:pb-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2.5 w-full hover:bg-sidebar-accent rounded-md p-1 -m-1 transition-colors shrink-0">
-              <div className="flex size-7 items-center justify-center rounded-lg overflow-hidden shrink-0">
-                <Image src="/logo.png" alt="America Virtual" width={28} height={28} className="object-contain" style={{ width: 'auto', height: 'auto' }} />
+            <button className="flex items-center gap-2.5 w-full hover:bg-white/10 rounded-md p-1 -m-1 transition-colors shrink-0">
+              <div className="flex size-8 items-center justify-center rounded-lg overflow-hidden shrink-0">
+                <Image src="/logo.png" alt="America Virtual" width={32} height={32} className="object-contain" style={{ width: 'auto', height: 'auto' }} />
               </div>
-              <div className="flex items-center gap-1 group-data-[collapsible=icon]:hidden">
-                <span className="text-sm font-medium">América Virtual RRHH</span>
-                <ChevronsUpDown className="size-3 text-muted-foreground" />
+              <div className="flex items-center gap-1.5 group-data-[collapsible=icon]:hidden min-w-0">
+                <span className="text-base font-bold text-white dark:text-sidebar-foreground leading-tight whitespace-nowrap">América Virtual RRHH</span>
+                <ChevronsUpDown className="size-3.5 text-white/70 dark:text-sidebar-foreground/70 shrink-0" />
               </div>
             </button>
           </DropdownMenuTrigger>
@@ -183,7 +166,8 @@ export function AdminSidebar({
         </DropdownMenu>
       </SidebarHeader>
 
-      <SidebarContent className="px-2.5">
+      <div className="flex flex-col flex-1 bg-white dark:bg-sidebar rounded-xl mt-2 mx-2 mb-2 group-data-[collapsible=icon]:mx-0.5 group-data-[collapsible=icon]:mb-0.5 group-data-[collapsible=icon]:rounded-lg overflow-hidden">
+      <SidebarContent className="px-2.5 pt-3 group-data-[collapsible=icon]:px-1">
         {/* Navegacion principal */}
         <SidebarGroup className="p-0">
           <SidebarGroupContent>
@@ -220,11 +204,11 @@ export function AdminSidebar({
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <Collapsible
-                  open={categoriasExpanded}
-                  onOpenChange={setCategoriasExpanded}
-                >
-                  <SidebarMenuItem>
+                <SidebarMenuItem>
+                  <Collapsible
+                    open={categoriasExpanded}
+                    onOpenChange={setCategoriasExpanded}
+                  >
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton className="h-8" tooltip="Categorias">
                         <Tags className="size-4" />
@@ -256,8 +240,8 @@ export function AdminSidebar({
                         })}
                       </SidebarMenuSub>
                     </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
+                  </Collapsible>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -296,21 +280,21 @@ export function AdminSidebar({
       </SidebarContent>
 
       <SidebarFooter className="px-2.5 pb-3 group-data-[collapsible=icon]:hidden">
-        <div className="flex items-center justify-between gap-3 rounded-lg border p-3 bg-sidebar-accent">
+        <div className="flex items-center justify-between gap-3 rounded-lg border p-3 bg-gray-50 dark:bg-sidebar-accent">
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
               <span className="text-sm font-medium">A</span>
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-medium truncate text-sidebar-foreground">Admin</span>
-              <span className="text-xs text-sidebar-foreground/60 truncate">
+              <span className="text-sm font-medium truncate">Admin</span>
+              <span className="text-xs text-muted-foreground truncate">
                 Administrador
               </span>
             </div>
           </div>
           <button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            className="flex size-8 items-center justify-center rounded-md hover:bg-sidebar-border transition-colors shrink-0 cursor-pointer text-sidebar-foreground"
+            className="flex size-8 items-center justify-center rounded-md hover:bg-gray-200 dark:hover:bg-sidebar-border transition-colors shrink-0 cursor-pointer"
           >
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -318,6 +302,7 @@ export function AdminSidebar({
           </button>
         </div>
       </SidebarFooter>
+      </div>
     </Sidebar>
   );
 }

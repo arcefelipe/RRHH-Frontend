@@ -50,14 +50,6 @@ export interface Licencia {
   empleado?: Empleado
 }
 
-export interface Tecnologia {
-  id: number
-  nombre: string
-  categoria: string | null
-  is_active: boolean
-  created_at: string
-}
-
 export interface Rol {
   id: number
   nombre: string
@@ -65,20 +57,6 @@ export interface Rol {
   permisos: string[]
   is_active: boolean
   created_at: string
-}
-
-export interface RecursoProyecto {
-  id: number
-  proyecto_id: number
-  empleado_id: number
-  rol_proyecto: string | null
-  horas_asignadas: number | null
-  fecha_inicio: string
-  fecha_fin: string | null
-  is_active: boolean
-  created_at: string
-  proyecto?: Proyecto
-  empleado?: Empleado
 }
 
 export interface Usuario {
@@ -185,12 +163,6 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     permission: 'dashboard.ver',
   },
   {
-    title: 'Panel de Control',
-    href: '/admin/panel-control',
-    icon: 'Gauge',
-    permission: 'panel.ver',
-  },
-  {
     title: 'Proyectos',
     href: '/admin/proyectos',
     icon: 'FolderKanban',
@@ -224,18 +196,6 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
         title: 'Puestos',
         href: '/admin/categorias/puestos',
         icon: 'Briefcase',
-        permission: 'categorias.ver',
-      },
-      {
-        title: 'Recursos Por Proyecto',
-        href: '/admin/categorias/recursos-proyecto',
-        icon: 'Layers',
-        permission: 'categorias.ver',
-      },
-      {
-        title: 'Tecnologias',
-        href: '/admin/categorias/tecnologias',
-        icon: 'Cpu',
         permission: 'categorias.ver',
       },
       {

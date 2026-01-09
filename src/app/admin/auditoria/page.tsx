@@ -363,7 +363,7 @@ export default function AdminAuditoriaPage() {
               />
             </div>
             <Select value={tablaFilter} onValueChange={setTablaFilter}>
-              <SelectTrigger className="w-45">
+              <SelectTrigger className="w-45" aria-label="Filtrar por tabla">
                 <SelectValue placeholder="Filtrar por tabla" />
               </SelectTrigger>
               <SelectContent>
@@ -378,7 +378,7 @@ export default function AdminAuditoriaPage() {
               </SelectContent>
             </Select>
             <Select value={accionFilter} onValueChange={setAccionFilter}>
-              <SelectTrigger className="w-45">
+              <SelectTrigger className="w-45" aria-label="Filtrar por acción">
                 <SelectValue placeholder="Filtrar por accion" />
               </SelectTrigger>
               <SelectContent>

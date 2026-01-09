@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { NuevoEmpleadoDialog, DetalleEmpleadoDialog } from './_components';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -33,168 +35,87 @@ import {
   Plus,
   MoreHorizontal,
   Pencil,
-  Trash2,
   Eye,
   Mail,
-  Phone,
   Building2,
   ChevronLeft,
   ChevronRight,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+  UserX,
+  UserCheck,
 } from 'lucide-react';
-
-// Datos de ejemplo hardcodeados
-const mockEmpleados = [
-  {
-    id: 1,
-    nombre: 'Juan Carlos',
-    apellido: 'Pérez González',
-    email: 'juan.perez@americavirtual.com',
-    telefono: '+54 11 4567-8901',
-    departamento: 'Desarrollo',
-    puesto: 'Senior Developer',
-    fecha_ingreso: '2022-03-15',
-    estado: 'activo',
-  },
-  {
-    id: 2,
-    nombre: 'María Laura',
-    apellido: 'García López',
-    email: 'maria.garcia@americavirtual.com',
-    telefono: '+54 11 4567-8902',
-    departamento: 'Diseño',
-    puesto: 'UX Designer',
-    fecha_ingreso: '2021-08-01',
-    estado: 'activo',
-  },
-  {
-    id: 3,
-    nombre: 'Carlos Alberto',
-    apellido: 'Rodríguez Martín',
-    email: 'carlos.rodriguez@americavirtual.com',
-    telefono: '+54 11 4567-8903',
-    departamento: 'Marketing',
-    puesto: 'Marketing Manager',
-    fecha_ingreso: '2020-01-10',
-    estado: 'activo',
-  },
-  {
-    id: 4,
-    nombre: 'Ana Sofía',
-    apellido: 'Martínez Ruiz',
-    email: 'ana.martinez@americavirtual.com',
-    telefono: '+54 11 4567-8904',
-    departamento: 'RRHH',
-    puesto: 'HR Specialist',
-    fecha_ingreso: '2023-02-20',
-    estado: 'activo',
-  },
-  {
-    id: 5,
-    nombre: 'Pedro José',
-    apellido: 'Sánchez Díaz',
-    email: 'pedro.sanchez@americavirtual.com',
-    telefono: '+54 11 4567-8905',
-    departamento: 'Desarrollo',
-    puesto: 'Tech Lead',
-    fecha_ingreso: '2019-06-01',
-    estado: 'activo',
-  },
-  {
-    id: 6,
-    nombre: 'Laura Elena',
-    apellido: 'Fernández Torres',
-    email: 'laura.fernandez@americavirtual.com',
-    telefono: '+54 11 4567-8906',
-    departamento: 'Finanzas',
-    puesto: 'Contadora',
-    fecha_ingreso: '2021-11-15',
-    estado: 'licencia',
-  },
-  {
-    id: 7,
-    nombre: 'Diego Martín',
-    apellido: 'López Vargas',
-    email: 'diego.lopez@americavirtual.com',
-    telefono: '+54 11 4567-8907',
-    departamento: 'Desarrollo',
-    puesto: 'Junior Developer',
-    fecha_ingreso: '2024-01-08',
-    estado: 'activo',
-  },
-  {
-    id: 8,
-    nombre: 'Valentina',
-    apellido: 'Gómez Silva',
-    email: 'valentina.gomez@americavirtual.com',
-    telefono: '+54 11 4567-8908',
-    departamento: 'Soporte',
-    puesto: 'Support Engineer',
-    fecha_ingreso: '2023-07-01',
-    estado: 'activo',
-  },
-  {
-    id: 9,
-    nombre: 'Martín',
-    apellido: 'Hernández Castro',
-    email: 'martin.hernandez@americavirtual.com',
-    telefono: '+54 11 4567-8909',
-    departamento: 'Operaciones',
-    puesto: 'Operations Manager',
-    fecha_ingreso: '2020-05-20',
-    estado: 'inactivo',
-  },
-  {
-    id: 10,
-    nombre: 'Camila',
-    apellido: 'Ruiz Moreno',
-    email: 'camila.ruiz@americavirtual.com',
-    telefono: '+54 11 4567-8910',
-    departamento: 'Diseño',
-    puesto: 'Graphic Designer',
-    fecha_ingreso: '2022-09-10',
-    estado: 'activo',
-  },
-];
-
-const departamentos = ['Todos', 'Desarrollo', 'Diseño', 'Marketing', 'RRHH', 'Finanzas', 'Soporte', 'Operaciones'];
-
-const estadoConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  activo: { label: 'Activo', variant: 'default' },
-  licencia: { label: 'En Licencia', variant: 'secondary' },
-  inactivo: { label: 'Inactivo', variant: 'destructive' },
-};
+import { empleadosService } from '@/lib/services/empleados.service';
+import type { EmpleadoListadoDto } from '@/types/empleados';
+import { EstadoEmpleado, estadoEmpleadoLabels, estadoEmpleadoVariants } from '@/types/empleados';
+import { toast } from 'sonner';
 
 export default function EmpleadosPage() {
+  const [empleados, setEmpleados] = useState<EmpleadoListadoDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterDepartamento, setFilterDepartamento] = useState('Todos');
+  const [filterEstado, setFilterEstado] = useState<string>('todos');
+  const [incluirInactivos, setIncluirInactivos] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [detalleDialogOpen, setDetalleDialogOpen] = useState(false);
+  const [selectedEmpleadoId, setSelectedEmpleadoId] = useState<number | null>(null);
   const itemsPerPage = 5;
 
+  const fetchEmpleados = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await empleadosService.getAll(incluirInactivos);
+      setEmpleados(data);
+    } catch (err) {
+      console.error('Error al cargar empleados:', err);
+      setError('No se pudieron cargar los empleados. Verifica que el backend esté corriendo.');
+    } finally {
+      setLoading(false);
+    }
+  }, [incluirInactivos]);
+
+  useEffect(() => {
+    fetchEmpleados();
+  }, [fetchEmpleados]);
+
   const filteredEmpleados = useMemo(() => {
-    let result = [...mockEmpleados];
+    let result = [...empleados];
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
         (emp) =>
-          emp.nombre.toLowerCase().includes(term) ||
-          emp.apellido.toLowerCase().includes(term) ||
-          emp.email.toLowerCase().includes(term)
+          emp.nombre?.toLowerCase().includes(term) ||
+          emp.apellido?.toLowerCase().includes(term) ||
+          emp.email?.toLowerCase().includes(term)
       );
     }
 
-    if (filterDepartamento !== 'Todos') {
-      result = result.filter((emp) => emp.departamento === filterDepartamento);
+    if (filterEstado !== 'todos') {
+      const estadoNum = parseInt(filterEstado);
+      result = result.filter((emp) => emp.estado === estadoNum);
     }
 
     return result;
-  }, [searchTerm, filterDepartamento]);
+  }, [empleados, searchTerm, filterEstado]);
 
   const totalPages = Math.ceil(filteredEmpleados.length / itemsPerPage);
   const paginatedEmpleados = filteredEmpleados.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // Stats
+  const stats = useMemo(() => ({
+    total: empleados.length,
+    activos: empleados.filter(e => e.estado === EstadoEmpleado.Activo).length,
+    enLicencia: empleados.filter(e => e.estado === EstadoEmpleado.Licencia).length,
+    proyectos: new Set(empleados.filter(e => e.proyecto).map(e => e.proyecto)).size,
+  }), [empleados]);
 
   const formatFecha = (fecha: string) => {
     return new Date(fecha).toLocaleDateString('es-AR', {
@@ -208,6 +129,67 @@ export default function EmpleadosPage() {
     return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
   };
 
+  const handleDesactivar = async (id: number) => {
+    try {
+      await empleadosService.desactivar(id);
+      toast.success('Empleado desactivado correctamente');
+      fetchEmpleados();
+    } catch (err) {
+      console.error('Error al desactivar empleado:', err);
+      toast.error('Error al desactivar el empleado');
+    }
+  };
+
+  const handleReactivar = async (id: number) => {
+    try {
+      await empleadosService.reactivar(id);
+      toast.success('Empleado reactivado correctamente');
+      fetchEmpleados();
+    } catch (err) {
+      console.error('Error al reactivar empleado:', err);
+      toast.error('Error al reactivar el empleado');
+    }
+  };
+
+  const handleEmpleadoCreado = () => {
+    fetchEmpleados();
+    setDialogOpen(false);
+  };
+
+  const handleVerDetalle = (id: number) => {
+    setSelectedEmpleadoId(id);
+    setDetalleDialogOpen(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-100">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="size-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Cargando empleados...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-100">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <AlertCircle className="size-12 text-destructive" />
+          <div>
+            <p className="font-medium text-destructive">Error al cargar empleados</p>
+            <p className="text-sm text-muted-foreground mt-1">{error}</p>
+          </div>
+          <Button onClick={fetchEmpleados} variant="outline" className="gap-2">
+            <RefreshCw className="size-4" />
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -215,11 +197,24 @@ export default function EmpleadosPage() {
           <h1 className="text-2xl font-bold">Empleados</h1>
           <p className="text-muted-foreground">Gestión del personal de la empresa</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setDialogOpen(true)}>
           <Plus className="size-4" />
           Nuevo Empleado
         </Button>
       </div>
+
+      <NuevoEmpleadoDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSuccess={handleEmpleadoCreado}
+      />
+
+      <DetalleEmpleadoDialog
+        open={detalleDialogOpen}
+        onOpenChange={setDetalleDialogOpen}
+        empleadoId={selectedEmpleadoId}
+        onUpdate={fetchEmpleados}
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -230,7 +225,7 @@ export default function EmpleadosPage() {
                 <Users className="size-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{mockEmpleados.length}</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
                 <p className="text-sm text-muted-foreground">Total Empleados</p>
               </div>
             </div>
@@ -243,7 +238,7 @@ export default function EmpleadosPage() {
                 <Users className="size-6 text-green-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{mockEmpleados.filter(e => e.estado === 'activo').length}</p>
+                <p className="text-2xl font-bold">{stats.activos}</p>
                 <p className="text-sm text-muted-foreground">Activos</p>
               </div>
             </div>
@@ -256,7 +251,7 @@ export default function EmpleadosPage() {
                 <Users className="size-6 text-amber-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{mockEmpleados.filter(e => e.estado === 'licencia').length}</p>
+                <p className="text-2xl font-bold">{stats.enLicencia}</p>
                 <p className="text-sm text-muted-foreground">En Licencia</p>
               </div>
             </div>
@@ -269,8 +264,8 @@ export default function EmpleadosPage() {
                 <Building2 className="size-6 text-blue-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{new Set(mockEmpleados.map(e => e.departamento)).size}</p>
-                <p className="text-sm text-muted-foreground">Departamentos</p>
+                <p className="text-2xl font-bold">{stats.proyectos}</p>
+                <p className="text-sm text-muted-foreground">Proyectos</p>
               </div>
             </div>
           </CardContent>
@@ -303,23 +298,30 @@ export default function EmpleadosPage() {
               />
             </div>
             <Select
-              value={filterDepartamento}
+              value={filterEstado}
               onValueChange={(v) => {
-                setFilterDepartamento(v);
+                setFilterEstado(v);
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Departamento" />
+              <SelectTrigger className="w-full sm:w-40" aria-label="Filtrar por estado">
+                <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
-                {departamentos.map((dep) => (
-                  <SelectItem key={dep} value={dep}>
-                    {dep}
-                  </SelectItem>
-                ))}
+                <SelectItem value="todos">Todos</SelectItem>
+                <SelectItem value={String(EstadoEmpleado.Activo)}>Activos</SelectItem>
+                <SelectItem value={String(EstadoEmpleado.Licencia)}>En Licencia</SelectItem>
+                <SelectItem value={String(EstadoEmpleado.Inactivo)}>Inactivos</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              variant={incluirInactivos ? 'default' : 'outline'}
+              onClick={() => setIncluirInactivos(!incluirInactivos)}
+              className="gap-2"
+            >
+              {incluirInactivos ? <UserCheck className="size-4" /> : <UserX className="size-4" />}
+              {incluirInactivos ? 'Mostrando inactivos' : 'Mostrar inactivos'}
+            </Button>
           </div>
 
           {/* Table */}
@@ -329,7 +331,7 @@ export default function EmpleadosPage() {
                 <TableRow>
                   <TableHead>Empleado</TableHead>
                   <TableHead className="hidden md:table-cell">Contacto</TableHead>
-                  <TableHead className="hidden sm:table-cell">Departamento</TableHead>
+                  <TableHead className="hidden sm:table-cell">Proyecto</TableHead>
                   <TableHead className="hidden lg:table-cell">Ingreso</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -353,31 +355,25 @@ export default function EmpleadosPage() {
                           </Avatar>
                           <div>
                             <p className="font-medium">{empleado.nombre} {empleado.apellido}</p>
-                            <p className="text-sm text-muted-foreground">{empleado.puesto}</p>
+                            <p className="text-sm text-muted-foreground">{empleado.puesto || 'Sin puesto'}</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Mail className="size-3 text-muted-foreground" />
-                            {empleado.email}
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Phone className="size-3" />
-                            {empleado.telefono}
-                          </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Mail className="size-3 text-muted-foreground" />
+                          {empleado.email || '-'}
                         </div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
-                        <Badge variant="outline">{empleado.departamento}</Badge>
+                        <Badge variant="outline">{empleado.proyecto || 'Sin asignar'}</Badge>
                       </TableCell>
                       <TableCell className="hidden lg:table-cell text-muted-foreground">
-                        {formatFecha(empleado.fecha_ingreso)}
+                        {formatFecha(empleado.fechaIngreso)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={estadoConfig[empleado.estado]?.variant || 'outline'}>
-                          {estadoConfig[empleado.estado]?.label || empleado.estado}
+                        <Badge variant={estadoEmpleadoVariants[empleado.estado]}>
+                          {estadoEmpleadoLabels[empleado.estado]}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -388,7 +384,7 @@ export default function EmpleadosPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleVerDetalle(empleado.id)}>
                               <Eye className="size-4 mr-2" />
                               Ver detalle
                             </DropdownMenuItem>
@@ -396,10 +392,21 @@ export default function EmpleadosPage() {
                               <Pencil className="size-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
-                              <Trash2 className="size-4 mr-2" />
-                              Eliminar
-                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {empleado.estado === EstadoEmpleado.Inactivo ? (
+                              <DropdownMenuItem onClick={() => handleReactivar(empleado.id)}>
+                                <UserCheck className="size-4 mr-2" />
+                                Reactivar
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() => handleDesactivar(empleado.id)}
+                                className="text-destructive"
+                              >
+                                <UserX className="size-4 mr-2" />
+                                Desactivar
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -428,17 +435,57 @@ export default function EmpleadosPage() {
                 >
                   <ChevronLeft className="size-4" />
                 </Button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? 'default' : 'outline'}
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </Button>
-                ))}
+                {(() => {
+                  const pages: (number | string)[] = [];
+                  const maxVisible = 5;
+
+                  if (totalPages <= maxVisible + 2) {
+                    // Mostrar todas las páginas si son pocas
+                    for (let i = 1; i <= totalPages; i++) pages.push(i);
+                  } else {
+                    // Siempre mostrar primera página
+                    pages.push(1);
+
+                    // Calcular rango alrededor de la página actual
+                    let start = Math.max(2, currentPage - 1);
+                    let end = Math.min(totalPages - 1, currentPage + 1);
+
+                    // Ajustar para mantener al menos 3 páginas en el medio
+                    if (currentPage <= 3) {
+                      end = Math.min(totalPages - 1, 4);
+                    } else if (currentPage >= totalPages - 2) {
+                      start = Math.max(2, totalPages - 3);
+                    }
+
+                    // Agregar elipsis antes si es necesario
+                    if (start > 2) pages.push('...');
+
+                    // Agregar páginas del medio
+                    for (let i = start; i <= end; i++) pages.push(i);
+
+                    // Agregar elipsis después si es necesario
+                    if (end < totalPages - 1) pages.push('...');
+
+                    // Siempre mostrar última página
+                    pages.push(totalPages);
+                  }
+
+                  return pages.map((page, idx) => (
+                    typeof page === 'string' ? (
+                      <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">...</span>
+                    ) : (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? 'default' : 'outline'}
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </Button>
+                    )
+                  ));
+                })()}
                 <Button
                   variant="outline"
                   size="icon"

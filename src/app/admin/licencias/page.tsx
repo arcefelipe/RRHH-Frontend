@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { NuevaLicenciaDialog } from './_components';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -156,6 +157,7 @@ export default function LicenciasPage() {
   const [filterTipo, setFilterTipo] = useState('Todos');
   const [filterEstado, setFilterEstado] = useState('Todos');
   const [currentPage, setCurrentPage] = useState(1);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const itemsPerPage = 5;
 
   const filteredLicencias = useMemo(() => {
@@ -214,7 +216,7 @@ export default function LicenciasPage() {
           <h1 className="text-2xl font-bold">Licencias</h1>
           <p className="text-muted-foreground">Gestión de licencias y permisos</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setDialogOpen(true)}>
           <Plus className="size-4" />
           Nueva Solicitud
         </Button>
@@ -308,7 +310,7 @@ export default function LicenciasPage() {
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-full sm:w-[160px]">
+              <SelectTrigger className="w-full sm:w-40" aria-label="Filtrar por tipo">
                 <SelectValue placeholder="Tipo" />
               </SelectTrigger>
               <SelectContent>
@@ -327,7 +329,7 @@ export default function LicenciasPage() {
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-full sm:w-[160px]">
+              <SelectTrigger className="w-full sm:w-40" aria-label="Filtrar por estado">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
@@ -451,6 +453,7 @@ export default function LicenciasPage() {
                   className="h-8 w-8"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
+                  aria-label="Página anterior"
                 >
                   <ChevronLeft className="size-4" />
                 </Button>
@@ -461,6 +464,8 @@ export default function LicenciasPage() {
                     size="icon"
                     className="h-8 w-8"
                     onClick={() => setCurrentPage(page)}
+                    aria-label={`Ir a página ${page}`}
+                    aria-current={currentPage === page ? 'page' : undefined}
                   >
                     {page}
                   </Button>
@@ -471,6 +476,7 @@ export default function LicenciasPage() {
                   className="h-8 w-8"
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
+                  aria-label="Página siguiente"
                 >
                   <ChevronRight className="size-4" />
                 </Button>
@@ -479,6 +485,8 @@ export default function LicenciasPage() {
           )}
         </CardContent>
       </Card>
+
+      <NuevaLicenciaDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }

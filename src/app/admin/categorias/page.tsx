@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Layers, Cpu, UserCog } from 'lucide-react';
+import { Briefcase, UserCog } from 'lucide-react';
 import Link from 'next/link';
 
 const categorias = [
@@ -10,18 +10,6 @@ const categorias = [
     description: 'Gestiona los puestos de trabajo',
     href: '/admin/categorias/puestos',
     icon: Briefcase,
-  },
-  {
-    title: 'Recursos Por Proyecto',
-    description: 'Asignacion de recursos a proyectos',
-    href: '/admin/categorias/recursos-proyecto',
-    icon: Layers,
-  },
-  {
-    title: 'Tecnologias',
-    description: 'Stack tecnologico de la empresa',
-    href: '/admin/categorias/tecnologias',
-    icon: Cpu,
   },
   {
     title: 'Roles',
